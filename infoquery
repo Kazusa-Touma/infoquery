@@ -1,0 +1,176 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+int coursesize, scoresize, infosize_t, infosize_s;
+class course {
+private:
+	string Cno, Cname, TID;
+public:
+	string getCno() {//在class外部获得成员
+		return Cno;
+	}
+	string getTID() {
+		return TID;
+	}
+	string getCname() {
+		return Cname;
+	}
+	void setAttribute(string s1, string s2, string s3) {//设置属性
+		Cno = s1;
+		Cname = s2;
+		TID = s3;
+	}
+}c[10005];
+class score {
+private:
+	string CID, Cno;
+	int grade;
+public:
+	string getCID() {
+		return CID;
+	}
+	string getCno() {
+		return Cno;
+	}
+	int getgrade() {
+		return grade;
+	}
+	void setAttibute(string s1, string s2, int g) {
+		CID = s1;
+		Cno = s2;
+		grade = g;
+	}
+	void setGrade(int g) {//修改成绩
+		grade = g;
+	}
+}s[10005];
+class person {//student和teacher的基类
+protected:
+	string name, gender, birth, ID;
+public:
+	void setAttribute(string s1, string s2, string s3, string s4) {
+		name = s1;
+		gender = s2;
+		birth = s3;
+		ID = s4;
+	}
+};
+class student :public person {
+public:
+	string getID() {
+		return ID;
+	}
+	string getname(){
+		return name;
+	}
+	string getgender() {
+		return gender;
+	}
+	string getbirth() {
+		return birth;
+	}
+	string GetTeacherFromCourse(string Cno);
+	int GetScoreFromCourse(string Cname);
+}stu[10005];
+class teacher :public person {
+public:
+	string getID() {
+		return ID;
+	}
+	string getname() {
+		return name;
+	}
+	void GetInfoFromID(string ID);
+	void SetScoreToCourse(string cname, string ID, int grade);
+}tea[10005];
+string student::GetTeacherFromCourse(string Cno) {
+	string TID, Tname;
+	for (int i = 0; i < coursesize; i++) {
+		if (Cno == c[i].getCno()) {
+			TID = c[i].getTID();
+		}
+	}
+	for (int i = 0; i < infosize_t; i++) {
+		if (TID == tea[i].getID()) {
+			Tname = tea[i].getname();
+		}
+	}
+	return Tname;
+}
+int student::GetScoreFromCourse(string Cname) {
+	string Cno;
+	int score = -1;
+	for (int i = 0; i < coursesize; i++) {
+		if (Cname == c[i].getCname()) {
+			Cno = c[i].getCno();
+		}
+	}
+	for (int i = 0; i < scoresize; i++) {
+		if (Cno == s[i].getCno() && this->getID() == s[i].getCID()) {
+			score = s[i].getgrade();
+		}
+	}
+	return score;
+}
+void teacher::GetInfoFromID(string ID) {
+	for (int i = 0; i < infosize_s; i++) {
+		if (ID == stu[i].getID()) {
+			cout << stu[i].getbirth() << " " << stu[i].getgender() << " " << stu[i].getname() << endl;
+			break;
+		}
+	}
+}
+void teacher::SetScoreToCourse(string cname, string ID, int grade) {
+	bool isExist = false;
+	string cno;
+	for (int i = 0; i < coursesize; i++) {
+		if (c[i].getCname() == cname) {
+			cno = c[i].getCno();
+			break;
+		}
+	}
+	for (int i = 0; i < scoresize; i++) {
+		if (s[i].getCno() == cno && s[i].getCID() == ID) {
+			s[i].setGrade(grade);
+			isExist = true;
+		}
+	}
+	if (!isExist) {
+		s[scoresize++].setAttibute(ID, cno, grade);
+	}
+}
+int main()
+{
+	fstream tas, course, score;
+	tas.open("C:\\Users\\86187\\Desktop\\tas.txt");
+	while (!tas.eof()) {
+		string name, gender, birth, ID;
+		tas >> name >> gender >> birth >> ID;
+		if (ID[0] == 't') {
+			tea[infosize_t++].setAttribute(name, gender, birth, ID);
+		}
+		else {
+			stu[infosize_s++].setAttribute(name, gender, birth, ID);
+		}
+	}
+	course.open("C:\\Users\\86187\\Desktop\\course.txt");
+	while (!course.eof()) {
+		string Cno, Cname, ID;
+		course >> Cno >> Cname >> ID;
+		c[coursesize++].setAttribute(Cno, Cname, ID);
+	}
+	score.open("C:\\Users\\86187\\Desktop\\score.txt");
+	while (!score.eof()) {
+		string ID, Cno;
+		int grade;
+		score >> ID >> Cno >> grade;
+		s[scoresize++].setAttibute(ID, Cno, grade);
+	}
+	cout << stu[2].GetTeacherFromCourse("COM005") << endl;//孙悟空
+	cout << stu[1].GetScoreFromCourse("知识图谱") << endl;//77
+	tea[1].GetInfoFromID("20131011");//1999.10 女 花千羽
+	tea[1].SetScoreToCourse("大数据", "20151217", 50);
+	cout << stu[3].GetScoreFromCourse("大数据") << endl;//50
+	return 0;
+}
